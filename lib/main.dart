@@ -28,22 +28,24 @@ class MyApp extends StatelessWidget {
       create: (context) => ToDoListNotifier([]),
       child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: Center(
-              child: FutureBuilder<Either<Failure, User>>(
-                  future:
-                      serviceLocator<UserAccountRepository>().hasUserLoggedIn(),
-                  builder: (_, snapshot) {
-                    if (snapshot.hasData) {
-                      return snapshot.data!.fold(
-                          (exception) => SignUpScreen(),
-                          (user) => UserTaskListScreen(
-                                username: user.email!,
-                              ));
-                    }
-                    return const Center(
-                      child: Text('Please Wait...'),
-                    );
-                  }))),
+          home: Scaffold(
+            body: Center(
+                child: FutureBuilder<Either<Failure, User>>(
+                    future: serviceLocator<UserAccountRepository>()
+                        .hasUserLoggedIn(),
+                    builder: (_, snapshot) {
+                      if (snapshot.hasData) {
+                        return snapshot.data!.fold(
+                            (exception) => SignUpScreen(),
+                            (user) => UserTaskListScreen(
+                                  username: user.email!,
+                                ));
+                      }
+                      return const Center(
+                        child: Text('Please Wait...'),
+                      );
+                    })),
+          )),
     );
   }
 }

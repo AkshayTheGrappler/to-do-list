@@ -30,6 +30,7 @@ class UserTaskListScreen extends StatefulWidget {
 class _UserTaskListScreenState extends State<UserTaskListScreen> {
   @override
   Widget build(BuildContext context) {
+    var widgetContext = context;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -183,12 +184,14 @@ class _UserTaskListScreenState extends State<UserTaskListScreen> {
                                 },
                                 onTap: () {
                                   Navigator.push(
-                                    context,
+                                    widgetContext,
                                     MaterialPageRoute(
-                                        builder: (context) => TaskCreatorScreen(
+                                        builder: (widgetContext) =>
+                                            TaskCreatorScreen(
                                               model: task,
                                               editMode: true,
                                               index: index,
+                                              username: widget.username!,
                                             )),
                                   );
                                 },
@@ -240,9 +243,11 @@ class _UserTaskListScreenState extends State<UserTaskListScreen> {
           child: FloatingActionButton(
             onPressed: () {
               Navigator.push(
-                context,
+                widgetContext,
                 MaterialPageRoute(
-                    builder: (context) => const TaskCreatorScreen()),
+                    builder: (widgetContext) => TaskCreatorScreen(
+                          username: widget.username!,
+                        )),
               );
             },
             tooltip: 'Add New Task',
