@@ -15,7 +15,7 @@ class UpdateTaskUseCase extends Usecase<bool, Params> {
 }
 
 class Params extends Equatable {
-  final Map<String, String>? task;
+  final Map<String, dynamic>? task;
   const Params({
     required this.task,
   });

@@ -7,6 +7,8 @@ import 'package:todo_list/features/tasks/data/models/task_model.dart';
 import 'package:todo_list/features/tasks/domain/usecases/create_task_usecase.dart';
 import 'package:todo_list/features/tasks/domain/usecases/get_tasks_usecase.dart'
     as getTask;
+import 'package:todo_list/features/tasks/domain/usecases/update_task_usecase.dart'
+    as updateTask;
 import 'package:todo_list/injection_container.dart';
 import 'package:todo_list/widgets/dialog_widget.dart';
 import 'package:todo_list/widgets/input_text.dart';
@@ -17,13 +19,15 @@ class TaskCreatorScreen extends StatefulWidget {
   final TaskModel? model;
   final bool? editMode;
   final int? index;
+  final String? username;
 
   const TaskCreatorScreen(
       {Key? key,
       this.index = 1,
       this.editMode = false,
       this.model = const TaskModel(
-          taskId: 0, taskName: '', taskDescription: '', taskDate: '')})
+          taskId: 0, taskName: '', taskDescription: '', taskDate: ''),
+      required this.username})
       : super(key: key);
 
   @override
@@ -145,82 +149,93 @@ class _TaskCreatorScreenState extends State<TaskCreatorScreen> {
                         context: context,
                         message: 'Please fill all the fields');
                   } else {
-                    serviceLocator<getTask.GetTasksUseCase>()
-                        .call(const getTask.Params(
-                            username: 'yadavakshay300@gmail.com'))
-                        .then((value) {
-                      value.fold((l) {
-                        if (l is InternetFailure) {
+                    showCustomDialog(
+                        context: context,
+                        text: widget.editMode!
+                            ? 'Modifying Task....'
+                            : 'Creating Task....');
+                    var task = TaskModel(
+                        taskId: widget.model!.taskId!,
+                        taskName: titleText,
+                        taskDescription: descriptionText,
+                        taskDate: dateText);
+                    if (widget.editMode!) {
+                      serviceLocator<updateTask.UpdateTaskUseCase>()
+                          .call(updateTask.Params(task: task.toJson()))
+                          .then((value) {
+                        Navigator.pop(context);
+                        value.fold((l) {
+                          if (l is InternetFailure) {
+                            showSnackBar(
+                                context: context,
+                                message:
+                                    'Please check your internet connection!');
+                          }
+                        }, (r) {
+                          Provider.of<ToDoListNotifier>(context, listen: false)
+                              .modify(widget.index!, task);
                           showSnackBar(
                               context: context,
-                              message:
-                                  'Please check your internet connection!');
-                        }
-                      }, (tasks) {
-                        showCustomDialog(
-                            context: context,
-                            text: widget.editMode!
-                                ? 'Modifying Task....'
-                                : 'Creating Task....');
-                        var taskId = 1;
-                        if (widget.editMode!) {
-                          taskId = widget.model!.taskId!;
-                        } else {
+                              message: 'Task Modified Successfully');
+                        });
+                      });
+                    } else {
+                      serviceLocator<getTask.GetTasksUseCase>()
+                          .call(getTask.Params(username: widget.username!))
+                          .then((value) {
+                        value.fold((l) {
+                          if (l is InternetFailure) {
+                            showSnackBar(
+                                context: context,
+                                message:
+                                    'Please check your internet connection!');
+                          }
+                        }, (tasks) {
+                          var taskId = 1;
                           if (tasks.isNotEmpty) {
                             tasks
                                 .sort((a, b) => a.taskId!.compareTo(b.taskId!));
                             taskId = tasks.last.taskId! + 1;
                           }
-                        }
-                        var task = TaskModel(
-                            taskId: taskId,
-                            taskName: titleText,
-                            taskDescription: descriptionText,
-                            taskDate: dateText);
-                        serviceLocator<CreateTaskUseCase>()
-                            .call(Params(
-                          task: task.toJson(),
-                        ))
-                            .then((result) {
-                          Navigator.pop(context);
-                          result.fold((l) {
-                            if (l is InternetFailure) {
-                              showSnackBar(
-                                  context: context,
-                                  message:
-                                      'Please check your internet connection!');
-                            } else {
-                              showSnackBar(
-                                  context: context,
-                                  message: 'Task Creation Failed');
-                            }
-                          }, (r) {
-                            if (widget.editMode!) {
-                              Provider.of<ToDoListNotifier>(context,
-                                      listen: false)
-                                  .delete(widget.index!);
+
+                          var task = TaskModel(
+                              taskId: taskId,
+                              taskName: titleText,
+                              taskDescription: descriptionText,
+                              taskDate: dateText);
+                          serviceLocator<CreateTaskUseCase>()
+                              .call(Params(
+                            task: task.toJson(),
+                          ))
+                              .then((result) {
+                            Navigator.pop(context);
+                            result.fold((l) {
+                              if (l is InternetFailure) {
+                                showSnackBar(
+                                    context: context,
+                                    message:
+                                        'Please check your internet connection!');
+                              } else {
+                                showSnackBar(
+                                    context: context,
+                                    message: 'Task Creation Failed');
+                              }
+                            }, (r) {
                               Provider.of<ToDoListNotifier>(context,
                                       listen: false)
                                   .add(task);
-                            } else {
-                              Provider.of<ToDoListNotifier>(context,
-                                      listen: false)
-                                  .add(task);
-                            }
-                            if (!widget.editMode!) {
                               _title.text = '';
                               _description.text = '';
                               _date.text = '';
-                            }
-                            showSnackBar(
-                                context: context,
-                                message: widget.editMode!
-                                    ? 'Task Modified Successfully'
-                                    : 'Task Created Successfully');
+
+                              showSnackBar(
+                                  context: context,
+                                  message: 'Task Created Successfully');
+                            });
                           });
                         });
                       });
-                    });
+                    }
                   }
                 },
                 style: TextButton.styleFrom(

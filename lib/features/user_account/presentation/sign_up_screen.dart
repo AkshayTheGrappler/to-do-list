@@ -59,8 +59,8 @@ class SignUpScreen extends StatelessWidget {
                     showCustomDialog(
                         context: context, text: 'Creating Account...');
                     serviceLocator<CreateUserUseCase>()
-                        .call(Params(
-                            username: passwordText, password: passwordText))
+                        .call(
+                            Params(username: emailText, password: passwordText))
                         .then((result) {
                       Navigator.pop(context);
                       result.fold((l) {
