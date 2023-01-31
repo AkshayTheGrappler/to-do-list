@@ -3,16 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_list/features/tasks/data/models/task_model.dart';
 
-class ToDoListNotifier extends ValueNotifier<List<TaskModel>> {
+class ToDoListNotifier with ChangeNotifier {
   var _taskList = <TaskModel>[];
-
-  ToDoListNotifier(super.value);
 
   List<TaskModel> getToDoList() => UnmodifiableListView(_taskList);
 
   void initialise(List<TaskModel> tasks) {
     _taskList = tasks;
-    //notifyListeners();
+    notifyListeners();
   }
 
   void add(TaskModel task) {

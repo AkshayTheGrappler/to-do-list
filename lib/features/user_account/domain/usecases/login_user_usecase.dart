@@ -5,24 +5,18 @@ import 'package:todo_list/core/errors/failures.dart';
 import 'package:todo_list/core/usecase/usecase.dart';
 import 'package:todo_list/features/user_account/domain/repository/user_account_respository.dart';
 
-class LoginUserUseCase implements Usecase<UserCredential, Params> {
+class LoginUserUseCase implements Usecase<UserCredential, NoParams> {
   final UserAccountRepository? userAccountRepository;
 
   const LoginUserUseCase({required this.userAccountRepository});
 
   @override
-  Future<Either<Failure, UserCredential>> call(Params params) async {
-    return await userAccountRepository!
-        .loginUser(username: params.username!, password: params.password!);
+  Future<Either<Failure, UserCredential>> call(NoParams params) async {
+    return await userAccountRepository!.loginUser();
   }
 }
 
-class Params extends Equatable {
-  final String? username;
-  final String? password;
-
-  const Params({required this.username, required this.password});
-
+class NoParams extends Equatable {
   @override
-  List<Object?> get props => [username, password];
+  List<Object?> get props => [];
 }

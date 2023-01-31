@@ -16,35 +16,10 @@ class UserAccountRepositoryImpl implements UserAccountRepository {
   });
 
   @override
-  Future<Either<Failure, UserCredential>> createUser(
-      {required String? username, required String? password}) async {
+  Future<Either<Failure, UserCredential>> loginUser() async {
     if (await internetChecker!.checkConnection()) {
       try {
-        var user = await dataSource!
-            .createUser(username: username, password: password);
-        return Right(user);
-      } catch (exception) {
-        if (exception is InvalidEmailException) {
-          return Left(InvalidEmailFailure());
-        } else if (exception is InvalidPasswordException) {
-          return Left(InvalidPasswordFailure());
-        } else if (exception is UserAlreadyExistsException) {
-          return Left(UserAlreadyExistsFailure());
-        }
-        return Left(InvalidCredFailure());
-      }
-    } else {
-      return Left(InternetFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, UserCredential>> loginUser(
-      {required String? username, required String? password}) async {
-    if (await internetChecker!.checkConnection()) {
-      try {
-        var user =
-            await dataSource!.loginUser(username: username, password: password);
+        var user = await dataSource!.loginUser();
         return Right(user);
       } catch (exception) {
         return Left(InvalidCredFailure());
